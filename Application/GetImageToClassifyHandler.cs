@@ -1,38 +1,35 @@
-﻿using Ardalis.Specification;
+﻿using Application.Specifications;
 using Domain;
 using Infrastructure;
+using JetBrains.Annotations;
 using MediatR;
 
 namespace Application;
-
-public class GetImageHandler:IRequestHandler<SelectImageCommand,SelectImageResult>
+[UsedImplicitly]
+public class GetImageToClassifyHandler:IRequestHandler<GetImageToClassifyCommand,GetImageToClassifyResult>
 {
-    IReadRepository<Image> imageRepository;
-    IReadRepository<ImageClassification> imageClassificationRepository;
-    IReadRepository<UserInfo> userInfoRepository;
+    private readonly IReadRepository<Image> imageRepository;
+    private readonly IReadRepository<UserInfo> userInfoRepository;
 
-    public async Task<SelectImageResult> Handle(SelectImageCommand request, CancellationToken cancellationToken)
+    public GetImageToClassifyHandler(IReadRepository<Image> imageRepository, IReadRepository<UserInfo> userInfoRepository)
+    {
+        this.imageRepository = imageRepository;
+        this.userInfoRepository = userInfoRepository;
+    }
+
+    public async Task<GetImageToClassifyResult> Handle(GetImageToClassifyCommand request, CancellationToken cancellationToken)
     {
 
-        var user=await userInfoRepository.FirstOrDefaultAsync(new UserByChatSpecification(request.ChatId));
+        var user=await userInfoRepository.FirstOrDefaultAsync(new UserByChatSpecification(request.ChatId), cancellationToken);
+        var imageWithoutMarks=await imageRepository.FirstOrDefaultAsync(new ImageWithoutMarksSpecification(user!), cancellationToken);
+        if(imageWithoutMarks is not null)
+            return new GetImageToClassifyResult(imageWithoutMarks);
+        var imageWithMinimumMarks=await imageRepository.FirstOrDefaultAsync(new ImageWithMinimumMarksSpecification(), cancellationToken);
+        return new GetImageToClassifyResult(imageWithMinimumMarks!);
+        
     }
 }
 
-public sealed class UserByChatSpecification : Specification<UserInfo>
-{
-    public UserByChatSpecification(long chatId)
-    {
-        Query.Where(c => c.ChatId == chatId);
-    }
-}
 
-public sealed class ClassificationsByUserSpecification : Specification<ImageClassification>
-{
-    public ClassificationsByUserSpecification(UserInfo user)
-    {
-        Query.Where(c => c.User == user);
-    }
-}
-
-public record SelectImageCommand(long ChatId) : IRequest<SelectImageResult>;
-public record SelectImageResult(Image Image, ImageClassification ImageClassification);
+public record GetImageToClassifyCommand(long ChatId) : IRequest<GetImageToClassifyResult>;
+public record GetImageToClassifyResult(Image Image);

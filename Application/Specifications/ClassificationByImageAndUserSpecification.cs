@@ -7,8 +7,10 @@ public sealed class ClassificationByImageAndUserSpecification : Specification<Im
 {
     public ClassificationByImageAndUserSpecification(Image image, UserInfo user)
     {
+        Query.Include(i=> i.ImageClassifications).ThenInclude(ic=>ic.User);
         Query.Where(i => i.Id == image.Id);
         Query.Select(i => 
-            i.ImageClassifications.Where(ic=>ic.User.Id==user.Id).ToArray());
+            i.ImageClassifications.Where(ic=>ic.User.Id==user.Id).ToArray())
+            .Take(1);
     }
 }

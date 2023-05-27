@@ -1,18 +1,19 @@
 ﻿using Application.Specifications;
 using Domain;
 using Infrastructure;
+using JetBrains.Annotations;
 using MediatR;
 
 namespace Application;
-
-public class GetClassificationHandler : IRequestHandler<GetClassificationCommand, ImageClassification>
+[UsedImplicitly]
+public class GetRandomClassHandler : IRequestHandler<GetClassificationCommand, ImageClassification>
 {
-    IReadRepository<Image> imageRepository;
-    private IReadRepository<UserInfo> userInfoRepository;
-    IReadRepository<ClassificationType> classificationTypeRepository;
-    Repository<ImageClassification> imageClassificationRepository;
+    private readonly IReadRepository<Image> imageRepository;
+    private readonly IReadRepository<UserInfo> userInfoRepository;
+    private readonly IReadRepository<ClassificationType> classificationTypeRepository;
+    private readonly Repository<ImageClassification> imageClassificationRepository;
 
-    public GetClassificationHandler(IReadRepository<UserInfo> userInfoRepository, IReadRepository<Image> imageRepository, IReadRepository<ClassificationType> classificationTypeRepository, Repository<ImageClassification> imageClassificationRepository)
+    public GetRandomClassHandler(IReadRepository<UserInfo> userInfoRepository, IReadRepository<Image> imageRepository, IReadRepository<ClassificationType> classificationTypeRepository, Repository<ImageClassification> imageClassificationRepository)
     {
         this.userInfoRepository = userInfoRepository;
         this.imageRepository = imageRepository;
@@ -37,3 +38,4 @@ public class GetClassificationHandler : IRequestHandler<GetClassificationCommand
 }
 
 public record GetClassificationCommand(long ChatId, Image Image) : IRequest<ImageClassification>;
+

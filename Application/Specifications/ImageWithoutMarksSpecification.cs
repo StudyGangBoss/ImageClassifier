@@ -7,6 +7,7 @@ public sealed class ImageWithoutMarksSpecification : Specification<Image>
 {
     public ImageWithoutMarksSpecification(UserInfo user)
     {
+        Query.Include(i => i.ImageClassifications).ThenInclude(ic=>ic.User);
         Query.Where(i => i.ImageClassifications.All(c => c.User.Id != user.Id));
     }
 }
