@@ -12,6 +12,7 @@ public class ImageConfiguration : IEntityTypeConfiguration<Image>
 
         builder.Property(image => image.Id)
             .ValueGeneratedNever();
+        builder.HasKey(image => image.Id);
 
         builder.HasMany(image => image.ImageClassifications)
             .WithOne(ic => ic.Image)
@@ -21,6 +22,5 @@ public class ImageConfiguration : IEntityTypeConfiguration<Image>
             .HasConversion(
                 v => v == null ? null : Convert.ToBase64String(v),
                 v => v == null ? null : Convert.FromBase64String(v));
-        builder.Navigation(image => image.ImageClassifications).AutoInclude();
     }
 }

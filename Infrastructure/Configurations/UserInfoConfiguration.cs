@@ -14,16 +14,5 @@ public class UserInfoConfiguration : IEntityTypeConfiguration<UserInfo>
             .ValueGeneratedNever();
        
         builder.HasIndex(u => u.ChatId);
-        builder.Navigation(user => user.ImageClassifications).AutoInclude();
-    }
-}
-public class ClassificationTypeConfiguration : IEntityTypeConfiguration<ClassificationType>
-{
-    public void Configure(EntityTypeBuilder<ClassificationType> builder)
-    {
-        builder.ToTable("users");
-
-        builder.Property(user => user.Id)
-            .ValueGeneratedNever();
     }
 }

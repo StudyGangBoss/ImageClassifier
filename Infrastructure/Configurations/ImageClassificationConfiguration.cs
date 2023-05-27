@@ -12,11 +12,17 @@ public class ImageClassificationConfiguration : IEntityTypeConfiguration<ImageCl
 
         builder.Property(ic => ic.Id)
             .ValueGeneratedNever();
+        builder.HasKey(ic => ic.Id);
+
+        builder.Property(ic => ic.UserId);
+        builder.Property(ic => ic.Mark);
+        builder.HasIndex(ic => ic.UserId);
+
         builder
             .HasOne(ic => ic.User)
             .WithMany(u => u.ImageClassifications);
         builder.HasOne(ic => ic.ClassificationType);
-        builder.Navigation(image => image.User).AutoInclude();
-        builder.Navigation(image => image.Image).AutoInclude();
+        builder.HasOne(ic => ic.Image);
+        builder.Navigation(ic => ic.ClassificationType).AutoInclude();
     }
 }

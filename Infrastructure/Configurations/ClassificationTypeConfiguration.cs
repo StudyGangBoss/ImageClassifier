@@ -8,9 +8,13 @@ public class ClassificationTypeConfiguration : IEntityTypeConfiguration<Classifi
 {
     public void Configure(EntityTypeBuilder<ClassificationType> builder)
     {
-        builder.ToTable("users");
+        builder.ToTable("classification_types");
 
         builder.Property(user => user.Id)
             .ValueGeneratedNever();
+        builder.HasKey(ct => ct.Id);
+        
+        builder.Property(ct=>ct.Question);
+        builder.Property(ct=>ct.Class);
     }
 }
