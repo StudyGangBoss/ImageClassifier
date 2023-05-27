@@ -1,9 +1,8 @@
 ﻿namespace Domain;
 
-public class QuestionInfo:IIDEntity
+public class ClassificationType:IIDEntity
 {
-    public string Question;
-    public string ClassificationType;
-
     public Guid Id { get; set; }
+    public string Question;
+    public string Class;
 }

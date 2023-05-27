@@ -1,20 +1,25 @@
 ﻿namespace Domain;
 
-public class ImageClassification : IDEntity
+public class ImageClassification : IIDEntity
 {
     public UserInfo User;
     public Image Image;
+    public Guid UserId;
 
-    public ImageClassification(Guid id, UserInfo user, Image image, string classificationType, int mark)
+    public ImageClassification( UserInfo user, Image image, ClassificationType classificationType)
     {
         User = user;
         Image = image;
         ClassificationType = classificationType;
-        Mark = mark;
-        Id = id;
+        UserId = user.Id;
+        Id = Guid.NewGuid();
+    }
+    
+    public ImageClassification( )
+    {
     }
 
-    public string ClassificationType { get; set; }
+    public ClassificationType ClassificationType { get; set; }
     public int Mark { get; set; }
     public Guid Id { get; set; }
 }

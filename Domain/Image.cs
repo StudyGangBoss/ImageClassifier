@@ -1,18 +1,15 @@
 ﻿namespace Domain;
 
-public class UserInfo : IIDEntity
+public class Image : IIDEntity
 {
     public Guid Id { get; set; }
-    public long ChatId { get; set; }
+    public byte[] ImageData;
+    public byte[] NeuralImageData;
+
     private readonly List<ImageClassification> imageClassifications = new();
     public IReadOnlyCollection<ImageClassification> ImageClassifications => imageClassifications.AsReadOnly();
-    public UserInfo()
+
+    public Image()
     {
-    }
-    
-    public UserInfo(long chatId)
-    {
-        ChatId = chatId;
-        Id = Guid.NewGuid();
     }
 }
