@@ -1,6 +1,7 @@
 ﻿using Application.Specifications;
 using Ardalis.Specification;
 using Domain;
+using Infrastructure;
 using MediatR;
 
 namespace Application;
@@ -8,9 +9,9 @@ namespace Application;
 public class AddUserHandler : IRequestHandler<AddUserCommand, UserInfo>
 {
     //generate Handler that will search user in repository and if it is not found, create new user
-    private readonly IRepositoryBase<UserInfo> repository;
+    private readonly Repository<UserInfo> repository;
 
-    public AddUserHandler(IRepositoryBase<UserInfo> repository)
+    public AddUserHandler(Repository<UserInfo> repository)
     {
         this.repository = repository;
     }

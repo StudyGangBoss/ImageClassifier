@@ -12,4 +12,10 @@ public class Image : IIDEntity
     public Image()
     {
     }
+
+    public Image(byte[] array)
+    {
+        ImageData = array;
+        Id = Guid.NewGuid();
+    }
 }

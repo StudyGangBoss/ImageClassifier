@@ -4,6 +4,9 @@ public class ImageClassification : IIDEntity
 {
     public UserInfo User;
     public Image Image;
+    public ClassificationType ClassificationType { get; set; }
+    public Guid ClassificationTypeId { get; set; }
+    public Guid ImageId { get; set; }
     public Guid UserId;
 
     public ImageClassification( UserInfo user, Image image, ClassificationType classificationType)
@@ -19,7 +22,7 @@ public class ImageClassification : IIDEntity
     {
     }
 
-    public ClassificationType ClassificationType { get; set; }
     public int Mark { get; set; }
+
     public Guid Id { get; set; }
 }

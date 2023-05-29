@@ -1,4 +1,5 @@
 ﻿using Application;
+using ImageClassifierBot.Services;
 using Infrastructure;
 using Telegram.Bot;
 using Telegram.Bot.Polling;

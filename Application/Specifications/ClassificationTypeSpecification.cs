@@ -8,6 +8,8 @@ public sealed class ClassificationTypeSpecification : Specification<Classificati
     public ClassificationTypeSpecification(ImageClassification[] classifications)
     {
         var classIds = classifications.Select(c => c.ClassificationType.Id);
-        Query.Where(i => !classIds.Contains(i.Id));
+        //Query.Where(i => !classIds.Contains(i.Id));
+        Query.Where(i => true);
+
     }
 }

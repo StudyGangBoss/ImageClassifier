@@ -5,6 +5,7 @@ using JetBrains.Annotations;
 using MediatR;
 
 namespace Application;
+
 [UsedImplicitly]
 public class GetRandomClassHandler : IRequestHandler<GetClassificationCommand, ImageClassification>
 {
@@ -13,7 +14,11 @@ public class GetRandomClassHandler : IRequestHandler<GetClassificationCommand, I
     private readonly IReadRepository<ClassificationType> classificationTypeRepository;
     private readonly Repository<ImageClassification> imageClassificationRepository;
 
-    public GetRandomClassHandler(IReadRepository<UserInfo> userInfoRepository, IReadRepository<Image> imageRepository, IReadRepository<ClassificationType> classificationTypeRepository, Repository<ImageClassification> imageClassificationRepository)
+    public GetRandomClassHandler(
+        IReadRepository<UserInfo> userInfoRepository,
+        IReadRepository<Image> imageRepository,
+        IReadRepository<ClassificationType> classificationTypeRepository,
+        Repository<ImageClassification> imageClassificationRepository)
     {
         this.userInfoRepository = userInfoRepository;
         this.imageRepository = imageRepository;
@@ -25,12 +30,13 @@ public class GetRandomClassHandler : IRequestHandler<GetClassificationCommand, I
     {
         var random = new Random();
         var user = await userInfoRepository.FirstOrDefaultAsync(new UserByChatSpecification(request.ChatId), cancellationToken);
-        var userClassifications =  await imageRepository.FirstOrDefaultAsync(new ClassificationByImageAndUserSpecification(request.Image, user!), cancellationToken);
-        if(userClassifications is null)
-            return null;
-        var availableClasses=await classificationTypeRepository.ListAsync(new ClassificationTypeSpecification(userClassifications!), cancellationToken);
+        var userClassifications = await imageRepository.FirstOrDefaultAsync(new ClassificationByImageAndUserSpecification(request.Image, user!), cancellationToken);
+        var classIds = userClassifications!.Select(c => c.ClassificationType.Id);
+        var availableClasses = (await classificationTypeRepository
+            .ListAsync(new ClassificationTypeSpecification(userClassifications!), cancellationToken))
+            .Where(c=>!classIds.Contains(c.Id));
         //get class from available classes using Random and store it to variable
-        var classificationType = availableClasses.OrderBy(_=>random.Next()).First();
+        var classificationType = availableClasses.OrderBy(_ => random.Next()).First();
         var classification = new ImageClassification(user!, request.Image, classificationType);
         await imageClassificationRepository.AddAsync(classification, cancellationToken);
         return classification;
@@ -38,4 +44,3 @@ public class GetRandomClassHandler : IRequestHandler<GetClassificationCommand, I
 }
 
 public record GetClassificationCommand(long ChatId, Image Image) : IRequest<ImageClassification>;
-

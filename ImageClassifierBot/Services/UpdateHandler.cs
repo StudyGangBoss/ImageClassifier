@@ -7,7 +7,7 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace ImageClassifierBot;
+namespace ImageClassifierBot.Services;
 
 public class UpdateHandler : IUpdateHandler
 {
@@ -34,6 +34,7 @@ public class UpdateHandler : IUpdateHandler
         {
             { Message: {} message } => BotOnMessageReceived(message, ct),
             { CallbackQuery: {} callbackQuery } => BotOnCallbackQueryReceived(callbackQuery, ct),
+            _ => Task.CompletedTask
         };
         await handler;
     }
@@ -47,14 +48,52 @@ public class UpdateHandler : IUpdateHandler
     {
         await sender.Send(new AddUserCommand(message!.Chat.Id), ct);
 
+        if (message.Photo is not null)
+        {
+            await AddImage(message, ct);
+        }
+
         if (message.Text is not {} messageText)
             return;
-
         var action = messageText.Split(' ')[0] switch
         {
             "/start" => GenerateImageMessage(_botClient, message, ct),
-            "/help" => Usage(_botClient, message, ct)
+            "/help" => Usage(_botClient, message, ct),
+            "/class" => AddClass(_botClient, message, ct),
+            _ => Usage(_botClient, message, ct)
         };
+    }
+
+    private async Task<Message> AddImage(Message message, CancellationToken ct)
+    {
+        var file = await _botClient.GetFileAsync(message.Photo.Last().FileId, ct);
+        var imageStream = new MemoryStream();
+        await _botClient.DownloadFileAsync(file.FilePath!, imageStream, ct);
+        var addImageResult = await sender.Send(new AddImageCommand(message.Chat.Id, imageStream), ct);
+
+        if (addImageResult.Image is not null)
+            return await _botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: $"Изображение добавлено с Id {addImageResult.Image.Id}",
+                replyMarkup: new ReplyKeyboardRemove(),
+                cancellationToken: ct);
+        return null;
+    }
+
+    async Task<Message> AddClass(ITelegramBotClient botClient, Message message, CancellationToken ct)
+    {
+        var request = string.Join(" ", message.Text!.Split(' ').Skip(1));
+        var classType = request.Split(';')[0];
+        var question = request.Split(';')[1];
+        var addClassResult = await sender.Send(new AddClassCommand(message.Chat.Id, question, classType), ct);
+
+        if (addClassResult.id is not null)
+            return await botClient.SendTextMessageAsync(
+                chatId: message.Chat.Id,
+                text: $"Класс {classType} добавлен с Id {addClassResult.id}",
+                replyMarkup: new ReplyKeyboardRemove(),
+                cancellationToken: ct);
+        return null;
     }
 
     static async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken ct)
@@ -96,6 +135,7 @@ public class UpdateHandler : IUpdateHandler
             return;
         var classificationId = Guid.Parse(data.Split(' ')[0]);
         var mark = Int32.Parse(data.Split(' ')[1]);
+        
 
         await sender.Send(new SetMarkCommand(classificationId, mark), ct);
         await _botClient.AnswerCallbackQueryAsync(
@@ -105,8 +145,9 @@ public class UpdateHandler : IUpdateHandler
 
         await _botClient.SendTextMessageAsync(
             callbackQuery.Message!.Chat.Id,
-            $"Received {callbackQuery.Data}",
+            $"Спасибо за оценку {callbackQuery.Message.Chat.Id}",
             cancellationToken: ct);
+        await GenerateImageMessage(_botClient, callbackQuery.Message, ct);
     }
 
     private IEnumerable<InlineKeyboardButton> GenerateKeyboard(Guid classificationId)

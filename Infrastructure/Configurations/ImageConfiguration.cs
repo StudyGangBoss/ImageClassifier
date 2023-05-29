@@ -15,9 +15,7 @@ public class ImageConfiguration : IEntityTypeConfiguration<Image>
         builder.HasKey(image => image.Id);
 
         builder.HasMany(image => image.ImageClassifications)
-            .WithOne(ic => ic.Image)
-            .HasForeignKey(ic => ic.Id);
-
+            .WithOne(ic => ic.Image);
         builder.Property(image => image.ImageData)
             .HasConversion(
                 v => v == null ? null : Convert.ToBase64String(v),
