@@ -1,8 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Text.RegularExpressions;
 using Application;
-using Domain;
 using Infrastructure;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,20 +14,30 @@ var sp=sc.BuildServiceProvider();
 var sender=sp.GetRequiredService<ISender>();
 var path = args[0];
 
-await sender.Send(new AddUserCommand(0, Role.Admin));
-
-var files = Directory.GetFiles(path, "*.*", SearchOption.AllDirectories)
-    .Where(p=>Regex.IsMatch(p, @"\.jpg$|\.png$|\.gif$"));
-
-foreach (var file in files)
+var imageInfos=(await sender.Send(new GetImageInfoCommand())).ToArray();
+for (var i = 0; i< imageInfos.Length;i++ )
 {
-    var memoryStream = new MemoryStream();
-
-    // Read the file into the memory stream
-    await using (var fileStream = new FileStream(file, FileMode.Open))
+    var image=await sender.Send(new GetImageCommand(imageInfos[i].ImageId));
+    if( imageInfos[i].Classes.All(c=>c.Value==0))
     {
-        fileStream.CopyTo(memoryStream);
+        var pathTo = Path.Join(path, "пусто");
+        if (!Directory.Exists(pathTo))
+            Directory.CreateDirectory(pathTo!);
+        using var ms = new MemoryStream(image.ImageData);
+        await using var fs = new FileStream(Path.Join(pathTo, $"{i}.jpg"), FileMode.Create);
+        ms.WriteTo(fs);
     }
-    await sender.Send(new AddImageCommand(0, memoryStream));
-    Console.WriteLine($"добавлено изображение {file}");
+    foreach (var @class in imageInfos[i].Classes)
+    {
+        var pathTo = Path.Join(path, $"{@class.Type}");
+        Console.WriteLine($"saving image to {pathTo}");
+        if(@class.Value==1)
+        {
+            if (!Directory.Exists(pathTo))
+                Directory.CreateDirectory(pathTo!);
+            using var ms = new MemoryStream(image.ImageData);
+            await using var fs = new FileStream(Path.Join(pathTo,$"{i}.jpg"), FileMode.Create);
+            ms.WriteTo(fs);
+        }
+    }
 }

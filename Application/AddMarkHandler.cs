@@ -27,3 +27,4 @@ public class AddMarkHandler:IRequestHandler<SetMarkCommand>
 }
 
 public record SetMarkCommand(Guid ClassificationId, int Mark) : IRequest;
+
