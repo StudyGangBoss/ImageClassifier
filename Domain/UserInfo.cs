@@ -11,10 +11,10 @@ public class UserInfo : IIDEntity
     {
     }
     
-    public UserInfo(long chatId)
+    public UserInfo(long chatId, Role role)
     {
         ChatId = chatId;
         Id = Guid.NewGuid();
-        Role= Role.User;
+        Role= role;
     }
 }

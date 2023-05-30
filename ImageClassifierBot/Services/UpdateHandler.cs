@@ -99,7 +99,7 @@ public class UpdateHandler : IUpdateHandler
     static async Task<Message> Usage(ITelegramBotClient botClient, Message message, CancellationToken ct)
     {
         const string usage = "Usage:\n" +
-                             "/inline_keyboard - send inline keyboard\n";
+                             "/start - для начала оценивания\n";
 
         return await botClient.SendTextMessageAsync(
             chatId: message.Chat.Id,
@@ -111,7 +111,7 @@ public class UpdateHandler : IUpdateHandler
     private async Task<Message> GenerateImageMessage(ITelegramBotClient botClient, Message message, CancellationToken ct)
     {
         var chatId = message.Chat.Id;
-        var classResult = await sender.Send(new GetClassAndImageToMarkCommand(chatId));
+        var classResult = await sender.Send(new GetClassAndImageToMarkCommand(chatId), ct);
 
         await botClient.SendChatActionAsync(
             message.Chat.Id,
@@ -140,19 +140,18 @@ public class UpdateHandler : IUpdateHandler
         await sender.Send(new SetMarkCommand(classificationId, mark), ct);
         await _botClient.AnswerCallbackQueryAsync(
             callbackQuery.Id,
-            $"Received {callbackQuery.Data}",
             cancellationToken: ct);
 
         await _botClient.SendTextMessageAsync(
             callbackQuery.Message!.Chat.Id,
-            $"Спасибо за оценку {callbackQuery.Message.Chat.Id}",
+            $"Спасибо за оценку",
             cancellationToken: ct);
         await GenerateImageMessage(_botClient, callbackQuery.Message, ct);
     }
 
     private IEnumerable<InlineKeyboardButton> GenerateKeyboard(Guid classificationId)
     {
-        for (var i = 0; i < 5; i++)
+        for (var i = 0; i <= 5; i++)
         {
             yield return InlineKeyboardButton.WithCallbackData(i.ToString(), $"{classificationId} {i.ToString()}");
         }

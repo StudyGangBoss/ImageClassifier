@@ -18,10 +18,10 @@ public class AddUserHandler : IRequestHandler<AddUserCommand, UserInfo>
 
     public async Task<UserInfo> Handle(AddUserCommand request, CancellationToken cancellationToken)
     {
-        var user = await repository.FirstOrDefaultAsync(new UserByChatSpecification(request.chatId), cancellationToken);
+        var user = await repository.FirstOrDefaultAsync(new UserByChatSpecification(request.ChatId), cancellationToken);
         if (user is null)
         {
-            user = new UserInfo(request.chatId);
+            user = new UserInfo(request.ChatId, request.Role);
             await repository.AddAsync(user, cancellationToken);
         }
 
@@ -29,4 +29,4 @@ public class AddUserHandler : IRequestHandler<AddUserCommand, UserInfo>
     }
 }
 
-public record AddUserCommand(long chatId) : IRequest<UserInfo>;
+public record AddUserCommand(long ChatId, Role Role = Role.User) : IRequest<UserInfo>;

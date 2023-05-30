@@ -22,7 +22,7 @@ public class ImageClassification : IIDEntity
     {
     }
 
-    public int Mark { get; set; }
+    public int Mark { get; set; } = -1;
 
     public Guid Id { get; set; }
 }
